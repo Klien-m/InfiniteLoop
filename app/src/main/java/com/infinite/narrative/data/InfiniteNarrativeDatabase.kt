@@ -3,6 +3,7 @@ package com.infinite.narrative.data
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.google.gson.Gson
 import com.infinite.narrative.data.dao.CharacterDao
 import com.infinite.narrative.data.dao.ItemDao
 import com.infinite.narrative.data.dao.QuestDao
@@ -37,7 +38,7 @@ import com.infinite.narrative.data.model.WorldStateSnapshot
     version = 1,
     exportSchema = true
 )
-@TypeConverters(ItemTypeConverters::class, PlayerAttributesTypeConverter::class)
+@TypeConverters(ItemTypeConverters::class, PlayerAttributesTypeConverter::class, ListStringConverter::class, MapStringIntConverter::class)
 abstract class InfiniteNarrativeDatabase : RoomDatabase() {
 
     abstract fun characterDao(): CharacterDao
@@ -53,7 +54,7 @@ abstract class InfiniteNarrativeDatabase : RoomDatabase() {
  * PlayerAttributes类型转换器
  */
 class PlayerAttributesTypeConverter {
-    private val gson = com.google.gson.Gson()
+    private val gson = Gson()
 
     @androidx.room.TypeConverter
     fun fromPlayerAttributes(attributes: PlayerAttributes): String {
@@ -63,5 +64,40 @@ class PlayerAttributesTypeConverter {
     @androidx.room.TypeConverter
     fun toPlayerAttributes(attributes: String): PlayerAttributes {
         return gson.fromJson(attributes, PlayerAttributes::class.java)
+    }
+}
+
+/**
+ * List<String>类型转换器
+ */
+class ListStringConverter {
+    private val gson = Gson()
+
+    @androidx.room.TypeConverter
+    fun fromListString(list: List<String>): String {
+        return gson.toJson(list)
+    }
+
+    @androidx.room.TypeConverter
+    fun toListString(data: String): List<String> {
+        return gson.fromJson(data, Array<String>::class.java).toList()
+    }
+}
+
+/**
+ * Map<String, Int>类型转换器
+ */
+class MapStringIntConverter {
+    private val gson = Gson()
+
+    @androidx.room.TypeConverter
+    fun fromMapStringInt(map: Map<String, Int>): String {
+        return gson.toJson(map)
+    }
+
+    @androidx.room.TypeConverter
+    fun toMapStringInt(data: String): Map<String, Int> {
+        val mapType = com.google.gson.reflect.TypeToken.getParameterized(Map::class.java, String::class.java, Int::class.java).type
+        return gson.fromJson(data, mapType)
     }
 }
