@@ -1,0 +1,119 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: '8.6'
+
+    - name: Make Gradle wrapper executable
+      run: chmod +x ./gradlew
+
+    - name: Cache Gradle dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Cache Android dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.android/build-cache
+          ~/.android/adb
+        key: ${{ runner.os }}-android-${{ hashFiles('**/build.gradle*', '**/gradle.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-android-
+
+    - name: Run lint
+      run: ./gradlew lint
+
+    - name: Run unit tests
+      run: ./gradlew test
+
+    - name: Run integration tests
+      run: ./gradlew connectedAndroidTest
+
+    - name: Build APK
+      run: ./gradlew assembleRelease
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: release-apk
+        path: app/build/outputs/apk/release/
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          app/build/reports/tests/
+          app/build/reports/coverage/
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Run security scan
+      uses: github/super-linter@v4
+      env:
+        DEFAULT_BRANCH: main
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        VALIDATE_JAVA: true
+        VALIDATE_KOTLIN: true
+        VALIDATE_YAML: true
+        VALIDATE_JSON: true
+
+  performance-test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Download APK
+      uses: actions/download-artifact@v3
+      with:
+        name: release-apk
+
+    - name: Setup Android Emulator
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 34
+        arch: x86_64
+        profile: pixel_6
+        script: |
+          echo "Starting performance tests..."
+          # Add performance testing commands here
+          # adb shell am start -n com.infinite.narrative/.MainActivity
+          # Run performance benchmarks

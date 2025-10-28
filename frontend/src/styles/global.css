@@ -1,0 +1,200 @@
+/* 全局样式 */
+
+:root {
+  --primary-color: #1890ff;
+  --success-color: #52c41a;
+  --warning-color: #faad14;
+  --error-color: #ff4d4f;
+  --text-primary: #1f1f1f;
+  --text-secondary: #666;
+  --text-disabled: #999;
+  --border-color: #d9d9d9;
+  --background-color: #f5f5f5;
+  --card-background: #ffffff;
+  --sidebar-background: #fafafa;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background-color);
+}
+
+#root {
+  height: 100%;
+}
+
+.app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.app-loading p {
+  margin-top: 16px;
+  font-size: 16px;
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  color: var(--text-secondary);
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #40a9ff;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.slide-in-up {
+  animation: slideInUp 0.6s ease-out;
+}
+
+.bounce {
+  animation: bounce 0.6s ease;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .app {
+    font-size: 14px;
+  }
+  
+  .ant-card {
+    margin-bottom: 12px;
+  }
+  
+  .ant-btn {
+    font-size: 14px;
+    height: 36px;
+    line-height: 34px;
+  }
+}
+
+@media (max-width: 480px) {
+  .app {
+    font-size: 13px;
+  }
+  
+  .ant-card {
+    margin-bottom: 8px;
+  }
+  
+  .ant-btn {
+    font-size: 13px;
+    height: 34px;
+    line-height: 32px;
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .ant-layout-header,
+  .ant-layout-sider,
+  .ant-float-button {
+    display: none;
+  }
+  
+  .game-content {
+    padding: 0;
+  }
+  
+  .story-display {
+    break-inside: avoid;
+    margin-bottom: 24px;
+  }
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+  :root {
+    --text-primary: #000;
+    --text-secondary: #333;
+    --border-color: #000;
+  }
+  
+  .ant-card {
+    border: 2px solid var(--border-color);
+  }
+}
+
+/* 减少动画模式 */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

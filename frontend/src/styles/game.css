@@ -1,0 +1,385 @@
+/* 游戏页面专用样式 */
+
+.game-layout {
+  min-height: 100vh;
+}
+
+.game-header {
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  padding: 0 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+}
+
+.world-info {
+  text-align: center;
+  color: white;
+}
+
+.world-info .ant-typography {
+  margin: 0;
+}
+
+.game-content {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.story-container {
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  backdrop-filter: blur(4px);
+}
+
+.loading-overlay .ant-typography {
+  margin-top: 16px;
+  color: #666;
+}
+
+.game-sidebar {
+  background: var(--sidebar-background);
+  border-left: 1px solid var(--border-color);
+  padding: 24px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+}
+
+.sidebar-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.world-state-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.world-state-info .ant-typography {
+  display: block;
+}
+
+.player-attributes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.attr-item {
+  text-align: center;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.attr-item .ant-typography {
+  display: block;
+  margin: 4px 0;
+}
+
+.inventory {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.character-sheet {
+  padding: 16px 0;
+}
+
+.attribute-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 16px 0;
+}
+
+.attr-card {
+  text-align: center;
+  padding: 16px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #e6e6e6;
+}
+
+.attr-card .ant-typography {
+  margin: 4px 0;
+}
+
+.progress-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-info .ant-typography {
+  display: block;
+}
+
+.inventory-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 故事显示组件样式 */
+.story-display {
+  position: relative;
+  animation: fadeInUp 0.6s ease-out;
+  background: var(--card-background);
+  border: 1px solid var(--border-color);
+}
+
+.story-display-last {
+  animation: pulse 0.5s ease-in-out;
+  border-left: 4px solid var(--primary-color);
+}
+
+.story-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.story-content {
+  margin: 16px 0;
+}
+
+.story-text {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: var(--text-primary);
+  line-height: 1.8;
+  font-size: 16px;
+}
+
+.world-state-update {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-color);
+}
+
+.state-changes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 选项选择器样式 */
+.option-selector {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 0;
+}
+
+.options-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.option-card {
+  position: relative;
+  overflow: hidden;
+  border: 2px solid #e6f7ff;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.option-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.option-card-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.option-content {
+  flex: 1;
+}
+
+.option-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.option-requirements {
+  background: #f9f9f9;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 3px solid var(--primary-color);
+}
+
+.requirements-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.option-consequences {
+  background: #fff7e6;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 3px solid var(--warning-color);
+}
+
+/* 动画关键帧 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 40px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes pulse {
+  from {
+    transform: scale3d(1, 1, 1);
+  }
+  50% {
+    transform: scale3d(1.02, 1.02, 1.02);
+  }
+  to {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+@keyframes typing {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .game-header {
+    padding: 0 16px;
+  }
+  
+  .header-content {
+    height: 56px;
+  }
+  
+  .world-info {
+    display: none;
+  }
+  
+  .game-content {
+    padding: 16px;
+  }
+  
+  .game-sidebar {
+    display: none;
+  }
+  
+  .story-container {
+    max-width: 100%;
+  }
+  
+  .loading-overlay {
+    padding: 0 16px;
+  }
+  
+  .option-selector {
+    padding: 16px 0;
+  }
+  
+  .options-grid {
+    gap: 12px;
+  }
+  
+  .option-card {
+    border-width: 1px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-content {
+    padding: 12px;
+  }
+  
+  .story-container {
+    padding: 0 4px;
+  }
+  
+  .option-selector {
+    padding: 12px 0;
+  }
+  
+  .options-header .ant-typography {
+    font-size: 16px;
+  }
+}
+
+/* 深色主题适配 */
+[data-theme="dark"] .game-layout {
+  background: #141414;
+}
+
+[data-theme="dark"] .game-header {
+  background: linear-gradient(135deg, #096dd9 0%, #1890ff 100%);
+}
+
+[data-theme="dark"] .game-content {
+  background: #1f1f1f;
+}
+
+[data-theme="dark"] .story-display {
+  background: #262626;
+  border-color: #434343;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .story-text {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .option-card {
+  background: #262626;
+  border-color: #434343;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .attr-card {
+  background: #262626;
+  border-color: #434343;
+}
