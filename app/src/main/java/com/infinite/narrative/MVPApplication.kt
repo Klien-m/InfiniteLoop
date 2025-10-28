@@ -7,10 +7,16 @@ import com.infinite.narrative.ai.ContentFilter
 import com.infinite.narrative.ai.ModelInfo
 import com.infinite.narrative.ai.filter.ContentFilterImpl
 import com.infinite.narrative.ai.model.NarrativeContext
+import com.infinite.narrative.ai.model.NarrativeResponse
+import com.infinite.narrative.ai.model.StoryOption
+import com.infinite.narrative.ai.model.WorldState
 import com.infinite.narrative.data.InfiniteNarrativeDatabase
+import com.infinite.narrative.data.model.PlayerAttributes
+import com.infinite.narrative.data.seed.WorldSeedData
 import com.infinite.narrative.engine.NarrativeEngine
 import com.infinite.narrative.engine.WorldStateManager
 import com.infinite.narrative.engine.NarrativeContextManager
+import com.infinite.narrative.engine.PlayerProgress
 import kotlinx.coroutines.*
 
 /**
@@ -87,12 +93,12 @@ class MVPApplication : Application() {
             try {
                 // 插入初始角色数据
                 database.characterDao().insertCharacters(
-                    com.infinite.narrative.data.seed.WorldSeedData.INITIAL_CHARACTERS
+                    WorldSeedData.INITIAL_CHARACTERS
                 )
                 
                 // 插入初始物品数据
                 database.itemDao().insertItems(
-                    com.infinite.narrative.data.seed.WorldSeedData.INITIAL_ITEMS
+                    WorldSeedData.INITIAL_ITEMS
                 )
                 
                 // 可以在这里添加更多初始数据...
@@ -109,7 +115,7 @@ class MVPApplication : Application() {
      */
     private fun createMockAIClient(): AIClient {
         return object : AIClient {
-            override suspend fun generateNarrative(context: NarrativeContext): com.infinite.narrative.ai.model.NarrativeResponse {
+            override suspend fun generateNarrative(context: NarrativeContext): NarrativeResponse {
                 // 根据不同的世界返回不同的模拟响应
                 return when (context.worldState.currentWorld) {
                     "cyber_penglai" -> generateCyberPenglaiResponse(context)
@@ -139,8 +145,8 @@ class MVPApplication : Application() {
     /**
      * 生成赛博蓬莱的模拟响应
      */
-    private fun generateCyberPenglaiResponse(context: com.infinite.narrative.ai.model.NarrativeContext): com.infinite.narrative.ai.model.NarrativeResponse {
-        return com.infinite.narrative.ai.model.NarrativeResponse(
+    private fun generateCyberPenglaiResponse(context: NarrativeContext): NarrativeResponse {
+        return NarrativeResponse(
             storySegment = """
                 霓虹灯在雨夜中闪烁，数据流如银河般在空中流淌。你站在赛博都市的街头，
                 感受到一股神秘的力量在召唤。远处的云端仙境若隐若现，仿佛在诉说着古老的秘密。
@@ -149,7 +155,7 @@ class MVPApplication : Application() {
                 云端仙境的关键线索。
             """.trimIndent(),
             generatedOptions = listOf(
-                com.infinite.narrative.ai.model.StoryOption(
+                StoryOption(
                     optionId = "explore_data_temple",
                     text = "前往数据庙宇寻找修复玉简的方法",
                     description = "数据庙宇是赛博都市中保存古老数据的地方，或许能找到修复玉简的技术。",
@@ -157,7 +163,7 @@ class MVPApplication : Application() {
                     potentialConsequences = listOf("可能遇到龙门商会的追兵", "有机会学习数据修复技术"),
                     estimatedTimeCost = 45
                 ),
-                com.infinite.narrative.ai.model.StoryOption(
+                StoryOption(
                     optionId = "seek_yunmeng_help",
                     text = "寻找网络游侠云梦的帮助",
                     description = "云梦精通数据流穿梭，或许能帮你解读玉简中的秘密。",
@@ -165,7 +171,7 @@ class MVPApplication : Application() {
                     potentialConsequences = listOf("可能卷入云梦的个人恩怨", "获得强大的盟友"),
                     estimatedTimeCost = 30
                 ),
-                com.infinite.narrative.ai.model.StoryOption(
+                StoryOption(
                     optionId = "visit_old_taoist",
                     text = "拜访老道长寻求古老智慧",
                     description = "老道长作为传统修仙者，可能理解玉简中的古老符文。",
@@ -181,8 +187,8 @@ class MVPApplication : Application() {
     /**
      * 生成法典迷城的模拟响应
      */
-    private fun generateLawMazeResponse(context: com.infinite.narrative.ai.model.NarrativeContext): com.infinite.narrative.ai.model.NarrativeResponse {
-        return com.infinite.narrative.ai.model.NarrativeResponse(
+    private fun generateLawMazeResponse(context: NarrativeContext): NarrativeResponse {
+        return NarrativeResponse(
             storySegment = """
                 法庭的钟声响起，法律条文在空中浮现，化作金色的锁链。你作为一名律法侠盗，
                 感受到法律的力量在体内涌动。
@@ -191,7 +197,7 @@ class MVPApplication : Application() {
                 法律的智慧来破解眼前的困境。
             """.trimIndent(),
             generatedOptions = listOf(
-                com.infinite.narrative.ai.model.StoryOption(
+                StoryOption(
                     optionId = "use_legal_loophole",
                     text = "寻找法律漏洞进行反击",
                     description = "利用你对法律的深刻理解，找到法官无法反驳的法律依据。",
@@ -199,7 +205,7 @@ class MVPApplication : Application() {
                     potentialConsequences = listOf("可能被指控藐视法庭", "展现卓越的法律才能"),
                     estimatedTimeCost = 20
                 ),
-                com.infinite.narrative.ai.model.StoryOption(
+                StoryOption(
                     optionId = "negotiate_with_judge",
                     text = "与法官进行法律谈判",
                     description = "通过合法的谈判程序，寻求和解的可能性。",
@@ -207,7 +213,7 @@ class MVPApplication : Application() {
                     potentialConsequences = listOf("可能达成有利协议", "暴露更多个人信息"),
                     estimatedTimeCost = 35
                 ),
-                com.infinite.narrative.ai.model.StoryOption(
+                StoryOption(
                     optionId = "escape_court",
                     text = "利用法律技巧逃离法庭",
                     description = "运用程序性法律权利，合法地离开当前困境。",
@@ -223,8 +229,8 @@ class MVPApplication : Application() {
     /**
      * 生成衰败王座的模拟响应
      */
-    private fun generateDecayingThroneResponse(context: com.infinite.narrative.ai.model.NarrativeContext): com.infinite.narrative.ai.model.NarrativeResponse {
-        return com.infinite.narrative.ai.model.NarrativeResponse(
+    private fun generateDecayingThroneResponse(context: NarrativeContext): NarrativeResponse {
+        return NarrativeResponse(
             storySegment = """
                 古老的神庙在风中低语，斑驳的壁画上，神明的目光似乎在追随你。你感受到
                 一股微弱但熟悉的信仰之力在召唤。
@@ -233,7 +239,7 @@ class MVPApplication : Application() {
                 正在逼近，你需要做出选择。
             """.trimIndent(),
             generatedOptions = listOf(
-                com.infinite.narrative.ai.model.StoryOption(
+                StoryOption(
                     optionId = "perform_ritual",
                     text = "进行古老的祭祀仪式",
                     description = "通过神圣的仪式唤醒沉睡的神力，对抗追兵。",
@@ -241,7 +247,7 @@ class MVPApplication : Application() {
                     potentialConsequences = listOf("可能唤醒强大的神力", "消耗大量体力"),
                     estimatedTimeCost = 50
                 ),
-                com.infinite.narrative.ai.model.StoryOption(
+                StoryOption(
                     optionId = "seek_poet_help",
                     text = "寻找流浪诗人的帮助",
                     description = "流浪诗人知晓古老的秘密，或许能提供庇护。",
@@ -249,7 +255,7 @@ class MVPApplication : Application() {
                     potentialConsequences = listOf("可能获得重要情报", "卷入诗人的麻烦"),
                     estimatedTimeCost = 25
                 ),
-                com.infinite.narrative.ai.model.StoryOption(
+                StoryOption(
                     optionId = "hide_in_ruins",
                     text = "在神庙废墟中隐藏",
                     description = "利用对神庙地形的熟悉，躲避追兵的搜捕。",
@@ -265,11 +271,11 @@ class MVPApplication : Application() {
     /**
      * 生成默认响应
      */
-    private fun generateDefaultResponse(context: com.infinite.narrative.ai.model.NarrativeContext): com.infinite.narrative.ai.model.NarrativeResponse {
-        return com.infinite.narrative.ai.model.NarrativeResponse(
+    private fun generateDefaultResponse(context: NarrativeContext): NarrativeResponse {
+        return NarrativeResponse(
             storySegment = "欢迎来到无限叙事世界！这是一个充满可能性的奇妙旅程。",
             generatedOptions = listOf(
-                com.infinite.narrative.ai.model.StoryOption(
+                StoryOption(
                     optionId = "start_journey",
                     text = "开始你的叙事之旅",
                     description = "选择一个世界开始你的冒险。",
@@ -287,11 +293,11 @@ class MVPApplication : Application() {
      */
     private fun createWorldStateManager(): WorldStateManager {
         return object : WorldStateManager {
-            override suspend fun getPlayerProgress(playerId: String): com.infinite.narrative.engine.PlayerProgress {
+            override suspend fun getPlayerProgress(playerId: String): PlayerProgress {
                 // 简化的实现，实际项目中需要从数据库读取
-                return com.infinite.narrative.engine.PlayerProgress(
+                return PlayerProgress(
                     playerId = playerId,
-                    playerAttributes = com.infinite.narrative.data.model.PlayerAttributes(),
+                    playerAttributes = PlayerAttributes(),
                     completedWorlds = listOf(),
                     activeQuests = listOf(),
                     inventoryItems = listOf(),
@@ -308,9 +314,9 @@ class MVPApplication : Application() {
             override suspend fun updateWorldState(
                 playerId: String,
                 worldId: String,
-                response: com.infinite.narrative.ai.model.NarrativeResponse,
-                context: com.infinite.narrative.ai.model.NarrativeContext
-            ): com.infinite.narrative.ai.model.WorldState {
+                response: NarrativeResponse,
+                context: NarrativeContext
+            ): WorldState {
                 // 简化的状态更新
                 return context.worldState
             }
@@ -336,9 +342,9 @@ class MVPApplication : Application() {
                 playerChoice: String?
             ): NarrativeContext {
                 // 根据世界ID返回相应的初始上下文
-                return com.infinite.narrative.data.seed.WorldSeedData
+                return WorldSeedData
                     .getWorldConfig(worldId)?.startingContext
-                    ?: com.infinite.narrative.ai.model.NarrativeContext(
+                    ?: NarrativeContext(
                         systemInstruction = "欢迎来到无限叙事世界",
                         worldState = com.infinite.narrative.ai.model.WorldState(
                             currentWorld = worldId,
@@ -348,7 +354,7 @@ class MVPApplication : Application() {
                             storyThreads = emptyList()
                         ),
                         recentStory = "故事刚刚开始",
-                        playerAttributes = com.infinite.narrative.data.model.PlayerAttributes(),
+                        playerAttributes = PlayerAttributes(),
                         availableWorlds = listOf(worldId),
                         activeQuests = listOf(),
                         inventoryItems = listOf(),
@@ -359,8 +365,8 @@ class MVPApplication : Application() {
             override suspend fun saveContextSnapshot(
                 playerId: String,
                 worldId: String,
-                context: com.infinite.narrative.ai.model.NarrativeContext,
-                response: com.infinite.narrative.ai.model.NarrativeResponse
+                context: NarrativeContext,
+                response: NarrativeResponse
             ) {
                 // 保存上下文快照到数据库
             }
@@ -369,7 +375,7 @@ class MVPApplication : Application() {
                 playerId: String,
                 worldId: String,
                 contextType: String
-            ): kotlinx.coroutines.flow.Flow<List<com.infinite.narrative.ai.model.NarrativeContext>> {
+            ): kotlinx.coroutines.flow.Flow<List<NarrativeContext>> {
                 return kotlinx.coroutines.flow.flow { emit(emptyList()) }
             }
             

@@ -1,9 +1,15 @@
 package com.infinite.narrative.data.seed
 
 import com.infinite.narrative.ai.model.NarrativeContext
+import com.infinite.narrative.ai.model.StoryThread
 import com.infinite.narrative.ai.model.WorldConfig
 import com.infinite.narrative.ai.model.WorldState
 import com.infinite.narrative.data.model.PlayerAttributes
+import com.infinite.narrative.data.model.Character
+import com.infinite.narrative.data.model.Item
+import com.infinite.narrative.data.model.ItemMetadata
+import com.infinite.narrative.data.model.ItemType
+import com.infinite.narrative.data.model.Rarity
 
 /**
  * 世界观种子数据 - 对应deepseek_markdown.md中的三个叙事种子
@@ -32,14 +38,14 @@ object WorldSeedData {
                     "云端仙境入口" to "寻找传说中的虚拟修仙空间入口"
                 ),
                 storyThreads = listOf(
-                    com.infinite.narrative.ai.model.StoryThread(
+                    StoryThread(
                         threadId = "main_quest",
                         title = "寻找云端仙境",
                         status = "active",
                         priority = 10,
                         lastUpdate = "故事开始"
                     ),
-                    com.infinite.narrative.ai.model.StoryThread(
+                    StoryThread(
                         threadId = "character_personal",
                         title = "云梦的身世之谜",
                         status = "dormant",
@@ -86,14 +92,14 @@ object WorldSeedData {
                     "法理悖论" to "寻找能够颠覆现有法律体系的终极悖论"
                 ),
                 storyThreads = listOf(
-                    com.infinite.narrative.ai.model.StoryThread(
+                    StoryThread(
                         threadId = "main_quest",
                         title = "破解法理悖论",
                         status = "active",
                         priority = 10,
                         lastUpdate = "故事开始"
                     ),
-                    com.infinite.narrative.ai.model.StoryThread(
+                    StoryThread(
                         threadId = "character_personal",
                         title = "小律师的成长之路",
                         status = "dormant",
@@ -140,14 +146,14 @@ object WorldSeedData {
                     "神之低语" to "寻找被遗忘之神的最后启示"
                 ),
                 storyThreads = listOf(
-                    com.infinite.narrative.ai.model.StoryThread(
+                    StoryThread(
                         threadId = "main_quest",
                         title = "重现神迹",
                         status = "active",
                         priority = 10,
                         lastUpdate = "故事开始"
                     ),
-                    com.infinite.narrative.ai.model.StoryThread(
+                    StoryThread(
                         threadId = "character_personal",
                         title = "流浪诗人的秘密",
                         status = "dormant",
@@ -196,21 +202,21 @@ object WorldSeedData {
      */
     val INITIAL_CHARACTERS = listOf(
         // 赛博蓬莱角色
-        com.infinite.narrative.data.model.Character(
+        Character(
             id = "cyber_penglai_lmh商会",
             name = "龙门商会",
             description = "赛博都市中最大的商业集团，掌握着数据和资源的命脉。",
             faction = "商业集团",
             imageUrl = "cyber_penglai/lmh商会.png"
         ),
-        com.infinite.narrative.data.model.Character(
+        Character(
             id = "cyber_penglai_yunmeng",
             name = "云梦",
             description = "神秘的网络游侠，能在数据流中自由穿梭。",
             faction = "自由战士",
             imageUrl = "cyber_penglai/yunmeng.png"
         ),
-        com.infinite.narrative.data.model.Character(
+        Character(
             id = "cyber_penglai_laodaozhang",
             name = "老道长",
             description = "坚持传统修仙之道的最后传人。",
@@ -219,21 +225,21 @@ object WorldSeedData {
         ),
 
         // 法典迷城角色
-        com.infinite.narrative.data.model.Character(
+        Character(
             id = "law_maze_judge",
             name = "法官大人",
             description = "法律秩序的坚定维护者，能用法槌改变现实。",
             faction = "司法系统",
             imageUrl = "law_maze/judge.png"
         ),
-        com.infinite.narrative.data.model.Character(
+        Character(
             id = "law_maze_lawyer",
             name = "小律师",
             description = "初出茅庐的法律新人，渴望改变现状。",
             faction = "法律新人",
             imageUrl = "law_maze/lawyer.png"
         ),
-        com.infinite.narrative.data.model.Character(
+        Character(
             id = "law_maze_fadianling",
             name = "法典之灵",
             description = "法律条文的具象化存在，知晓所有法律秘密。",
@@ -242,21 +248,21 @@ object WorldSeedData {
         ),
 
         // 衰败王座角色
-        com.infinite.narrative.data.model.Character(
+        Character(
             id = "decaying_throne_archbishop",
             name = "大主教",
             description = "现有宗教的领袖，视你为异端。",
             faction = "主流宗教",
             imageUrl = "decaying_throne/archbishop.png"
         ),
-        com.infinite.narrative.data.model.Character(
+        Character(
             id = "decaying_throne_poet",
             name = "流浪诗人",
             description = "游走各地传播信仰的诗人，知晓古老秘密。",
             faction = "流浪者",
             imageUrl = "decaying_throne/poet.png"
         ),
-        com.infinite.narrative.data.model.Character(
+        Character(
             id = "decaying_throne_god_statue",
             name = "古老神像",
             description = "被遗忘之神的象征，蕴含着神力。",
@@ -270,41 +276,41 @@ object WorldSeedData {
      */
     val INITIAL_ITEMS = listOf(
         // 赛博蓬莱物品
-        com.infinite.narrative.data.model.Item(
+        Item(
             id = "cyber_penglai_broken_jade",
             name = "破损的玉简",
             description = "记载着云端仙境线索的古老玉简，虽然破损但仍蕴含信息。",
-            itemType = com.infinite.narrative.data.model.ItemType.CONCEPTUAL,
-            rarity = com.infinite.narrative.data.model.Rarity.UNCOMMON,
+            itemType = ItemType.CONCEPTUAL,
+            rarity = Rarity.UNCOMMON,
             value = 100,
-            metadata = com.infinite.narrative.data.model.ItemMetadata.ConceptualMetadata(
+            metadata = ItemMetadata.ConceptualMetadata(
                 conditions = listOf("需要在数据庙宇中修复")
             )
         ),
 
         // 法典迷城物品
-        com.infinite.narrative.data.model.Item(
+        Item(
             id = "law_maze_legal_code",
             name = "基础法律典籍",
             description = "包含基本法律条文的典籍，是律法侠盗的入门读物。",
-            itemType = com.infinite.narrative.data.model.ItemType.KNOWLEDGE,
-            rarity = com.infinite.narrative.data.model.Rarity.COMMON,
+            itemType = ItemType.KNOWLEDGE,
+            rarity = Rarity.COMMON,
             value = 50,
-            metadata = com.infinite.narrative.data.model.ItemMetadata.KnowledgeMetadata(
+            metadata = ItemMetadata.KnowledgeMetadata(
                 skillLevel = 1,
                 learningTime = 30
             )
         ),
 
         // 衰败王座物品
-        com.infinite.narrative.data.model.Item(
+        Item(
             id = "decaying_throne_priest_robe",
             name = "古老的祭司袍",
             description = "传承自上古祭司的法袍，蕴含着微弱的神力。",
-            itemType = com.infinite.narrative.data.model.ItemType.SPIRITUAL,
-            rarity = com.infinite.narrative.data.model.Rarity.RARE,
+            itemType = ItemType.SPIRITUAL,
+            rarity = Rarity.RARE,
             value = 200,
-            metadata = com.infinite.narrative.data.model.ItemMetadata.SpiritualMetadata(
+            metadata = ItemMetadata.SpiritualMetadata(
                 power = 2,
                 source = "被遗忘之神",
                 sideEffects = listOf("会吸引神敌的注意")
