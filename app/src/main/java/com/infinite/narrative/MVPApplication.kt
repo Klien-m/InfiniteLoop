@@ -116,6 +116,12 @@ class MVPApplication : Application() {
     private fun createMockAIClient(): AIClient {
         return object : AIClient {
             override suspend fun generateNarrative(context: NarrativeContext): NarrativeResponse {
+                // 检查是否是世界选择上下文
+                if (context.worldState.currentWorld == "nexus" &&
+                    context.systemInstruction.contains("世界引导者")) {
+                    return generateWorldSelectionResponse(context)
+                }
+                
                 // 根据不同的世界返回不同的模拟响应
                 return when (context.worldState.currentWorld) {
                     "cyber_penglai" -> generateCyberPenglaiResponse(context)
@@ -139,6 +145,47 @@ class MVPApplication : Application() {
             override suspend fun warmup() {}
             
             override fun cleanup() {}
+            
+            /**
+             * 生成世界选择响应
+             */
+            private fun generateWorldSelectionResponse(context: NarrativeContext): NarrativeResponse {
+                return NarrativeResponse(
+                    storySegment = """
+                        欢迎来到无限叙事世界！作为一位叙事行者，你站在万象之根的交汇处，
+                        感受到无数故事世界的召唤。根据你的潜力和经历，我为你推荐以下世界：
+                        
+                        每个世界都有独特的风格和挑战，选择一个开始你的冒险吧！
+                    """.trimIndent(),
+                    generatedOptions = listOf(
+                        StoryOption(
+                            optionId = "cyber_penglai",
+                            text = "赛博蓬莱",
+                            description = "在未来都市，你的意识可以上传至仙境网络，在代码与灵气的冲突中寻求长生。",
+                            requiredAttributes = mapOf("洞察力" to 10),
+                            potentialConsequences = listOf("体验科技与传统的融合", "面对数据安全的挑战"),
+                            estimatedTimeCost = 60
+                        ),
+                        StoryOption(
+                            optionId = "law_maze",
+                            text = "法典迷城",
+                            description = "在一个法律条文能直接改写物理规则的世界，你是一名律法侠盗，利用法律的漏洞施展超能力。",
+                            requiredAttributes = mapOf("说服力" to 12),
+                            potentialConsequences = listOf("掌握法律的力量", "挑战司法体系"),
+                            estimatedTimeCost = 45
+                        ),
+                        StoryOption(
+                            optionId = "decaying_throne",
+                            text = "衰败王座",
+                            description = "你是某个被遗忘之神的最后一位祭司，在一个无神的世界里，收集信仰，重现神迹。",
+                            requiredAttributes = mapOf("魄力" to 14),
+                            potentialConsequences = listOf("唤醒沉睡的神力", "面对信仰的考验"),
+                            estimatedTimeCost = 50
+                        )
+                    ),
+                    confidenceScore = 0.95f
+                )
+            }
         }
     }
     
@@ -308,7 +355,9 @@ class MVPApplication : Application() {
             }
             
             override suspend fun getAvailableWorlds(playerId: String): List<String> {
-                return listOf("cyber_penglai", "law_maze", "decaying_throne")
+                val worlds = listOf("cyber_penglai", "law_maze", "decaying_throne")
+                println("DEBUG: Available worlds for $playerId: $worlds")
+                return worlds
             }
             
             override suspend fun updateWorldState(
@@ -346,7 +395,7 @@ class MVPApplication : Application() {
                     .getWorldConfig(worldId)?.startingContext
                     ?: NarrativeContext(
                         systemInstruction = "欢迎来到无限叙事世界",
-                        worldState = com.infinite.narrative.ai.model.WorldState(
+                        worldState = WorldState(
                             currentWorld = worldId,
                             keyCharacters = emptyMap(),
                             unlockedLocations = emptyList(),

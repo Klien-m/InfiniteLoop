@@ -147,7 +147,6 @@ data class ModelInfo(
 enum class GenerationMode {
     ONLINE,     // 使用在线API
     OFFLINE,    // 使用离线模型
-    FALLBACK    // 降级模式
 }
 
 /**

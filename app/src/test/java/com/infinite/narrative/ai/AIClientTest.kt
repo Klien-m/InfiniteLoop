@@ -5,7 +5,8 @@ import com.infinite.narrative.ai.model.*
 import com.infinite.narrative.data.model.PlayerAttributes
 import io.mockk.*
 import junit.framework.TestCase.assertEquals
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -30,7 +31,9 @@ class AIClientTest {
         hybridClient = object : HybridAIClient {
             override suspend fun generateNarrative(context: NarrativeContext): NarrativeResponse {
                 return if (isOnline()) {
-                    mockOnlineClient.generateNarrative(context)
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        mockOnlineClient.generateNarrative(context)
+                    }
                 } else {
                     mockOfflineClient.generateNarrative(context)
                 }
@@ -68,7 +71,9 @@ class AIClientTest {
                 return if (forceOffline) {
                     mockOfflineClient.generateNarrative(context)
                 } else {
-                    mockOnlineClient.generateNarrative(context)
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        mockOnlineClient.generateNarrative(context)
+                    }
                 }
             }
             
@@ -78,14 +83,17 @@ class AIClientTest {
             
             override fun observeModeChanges(): kotlinx.coroutines.flow.Flow<GenerationMode> {
                 return kotlinx.coroutines.flow.flow {
-                    emit(getCurrentMode())
-                }
+                    while (true) {
+                        emit(getCurrentMode())
+                        kotlinx.coroutines.delay(1000) // 每秒检查一次模式变化
+                    }
+                }.flowOn(kotlinx.coroutines.Dispatchers.IO)
             }
         }
     }
     
     @Test
-    fun `test online generation success`() = runBlocking {
+    fun `test online generation success`() = runTest {
         // Given
         val context = createTestContext()
         val expectedResponse = createTestResponse()
@@ -111,7 +119,7 @@ class AIClientTest {
     }
     
     @Test
-    fun `test offline generation fallback`() = runBlocking {
+    fun `test offline generation fallback`() = runTest {
         // Given
         val context = createTestContext()
         val expectedResponse = createTestResponse()
@@ -136,7 +144,7 @@ class AIClientTest {
     }
     
     @Test
-    fun `test content filtering applied`() = runBlocking {
+    fun `test content filtering applied`() = runTest {
         // Given
         val context = createTestContext()
         val rawResponse = NarrativeResponse(
@@ -183,7 +191,7 @@ class AIClientTest {
     }
     
     @Test
-    fun `test force offline mode`() = runBlocking {
+    fun `test force offline mode`() = runTest {
         // Given
         val context = createTestContext()
         val expectedResponse = createTestResponse()

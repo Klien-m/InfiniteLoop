@@ -3,17 +3,36 @@ package com.infinite.narrative.ui
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.infinite.narrative.MVPApplication
-import androidx.compose.runtime.collectAsState
 import com.infinite.narrative.ui.component.LoadingIndicator
 import com.infinite.narrative.ui.component.OptionSelector
 import com.infinite.narrative.ui.component.StoryReader
@@ -63,7 +82,7 @@ fun InfiniteNarrativeApp(
     modifier: Modifier = Modifier
 ) {
     val uiState: MainUiState by viewModel.uiState
-    
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -99,7 +118,9 @@ fun InfiniteNarrativeApp(
                         state = state,
                         onWorldSelected = { viewModel.selectWorld(it) },
                         onRetry = onRetry,
-                        modifier = Modifier.align(Alignment.Center)
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .fillMaxSize()
                     )
                 }
 
@@ -107,7 +128,10 @@ fun InfiniteNarrativeApp(
                     StoryReadingScreen(
                         state = state,
                         onContinue = { viewModel.continueStory() },
-                        modifier = Modifier.align(Alignment.Center)
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .fillMaxSize()
+                            .padding(16.dp)
                     )
                 }
 
@@ -115,7 +139,10 @@ fun InfiniteNarrativeApp(
                     OptionSelectionScreen(
                         state = state,
                         onOptionSelected = { viewModel.selectOption(it) },
-                        modifier = Modifier.align(Alignment.Center)
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .fillMaxSize()
+                            .padding(16.dp)
                     )
                 }
 
@@ -142,20 +169,22 @@ fun WorldSelectionScreen(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // 为WorldSelector添加权重，确保它获得足够的高度
         WorldSelector(
             worlds = state.worldOptions,
+            onWorldSelected = onWorldSelected,
             recommendation = state.recommendation,
-            onWorldSelected = onWorldSelected
+            modifier = Modifier.weight(1f) // 分配剩余空间
         )
-        
+
         Button(
             onClick = { onRetry() },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .padding(top = 16.dp)
         ) {
             Text("重新生成推荐")
         }
@@ -171,6 +200,8 @@ fun StoryReadingScreen(
     onContinue: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val currentProgress = remember { mutableFloatStateOf(0f) }
+
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -178,14 +209,17 @@ fun StoryReadingScreen(
         StoryReader(
             storyText = state.storyText,
             onTextFinished = onContinue,
+            onProgressChanged = { progress ->
+                currentProgress.floatValue = progress
+            },
             modifier = Modifier.weight(1f)
         )
-        
+
         LinearProgressIndicator(
-            progress = state.readProgress,
+            progress = { currentProgress.floatValue },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(16.dp)
         )
     }
 }
@@ -224,13 +258,13 @@ fun ErrorScreen(
             text = "发生错误",
             style = MaterialTheme.typography.headlineMedium
         )
-        
+
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center
         )
-        
+
         Button(
             onClick = onRetry
         ) {

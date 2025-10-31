@@ -1,17 +1,47 @@
 package com.infinite.narrative.ui.component
 
-import androidx.compose.animation.*
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.infinite.narrative.ai.model.StoryOption
@@ -25,6 +55,7 @@ import kotlinx.coroutines.delay
 fun StoryReader(
     storyText: String,
     onTextFinished: () -> Unit = {},
+    onProgressChanged: ((Float) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var displayText by remember { mutableStateOf("") }
@@ -37,9 +68,13 @@ fun StoryReader(
         for (char in storyText) {
             displayText += char
             delay(50) // 打字机效果速度
+            // 计算并更新进度
+            val progress = displayText.length.toFloat() / storyText.length.toFloat()
+            onProgressChanged?.invoke(progress)
         }
 
         isTyping = false
+        onProgressChanged?.invoke(1f) // 完成时设置为100%
         onTextFinished()
     }
 
@@ -49,28 +84,36 @@ fun StoryReader(
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = displayText,
-            fontSize = 16.sp,
-            lineHeight = 24.sp,
-            textAlign = TextAlign.Justify,
+        // 为长篇故事添加滚动功能
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        )
-
-        // 跳过按钮
-        if (isTyping) {
-            SkipButton(
-                onClick = {
-                    displayText = storyText
-                    isTyping = false
-                    onTextFinished()
-                },
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = displayText,
+                fontSize = 16.sp,
+                lineHeight = 24.sp,
+                textAlign = TextAlign.Justify,
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()) // 添加滚动
                     .padding(16.dp)
             )
+
+            // 跳过按钮
+            if (isTyping) {
+                SkipButton(
+                    onClick = {
+                        displayText = storyText
+                        isTyping = false
+                        onTextFinished()
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                )
+            }
         }
     }
 }
@@ -106,8 +149,7 @@ fun OptionSelector(
 ) {
     Column(
         modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
+            .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
@@ -120,11 +162,20 @@ fun OptionSelector(
             textAlign = TextAlign.Center
         )
 
-        options.forEach { option ->
-            OptionCard(
-                option = option,
-                onSelected = { onOptionSelected(option.optionId) }
-            )
+        // 添加垂直滚动以处理超长内容
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f) // 占据剩余空间
+                .verticalScroll(rememberScrollState()), // 添加滚动
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            options.forEach { option ->
+                OptionCard(
+                    option = option,
+                    onSelected = { onOptionSelected(option.optionId) }
+                )
+            }
         }
     }
 }
@@ -148,7 +199,6 @@ fun OptionCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier
@@ -189,6 +239,40 @@ fun OptionCard(
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
+
+                    // 显示潜在后果
+                    option.potentialConsequences?.let { consequences ->
+                        if (consequences.isNotEmpty()) {
+                            Text(
+                                text = "可能后果：",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                            Column(
+                                modifier = Modifier.padding(start = 8.dp, top = 2.dp)
+                            ) {
+                                consequences.forEach { consequence ->
+                                    Text(
+                                        text = "• $consequence",
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // 显示预估时间成本
+                    option.estimatedTimeCost?.let { timeCost ->
+                        Text(
+                            text = "预估耗时：${timeCost}分钟",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
 
                     option.requiredAttributes?.let { attributes ->
                         if (attributes.isNotEmpty()) {
@@ -280,13 +364,48 @@ fun WorldSelector(
             textAlign = TextAlign.Center
         )
 
-        worlds.forEach { world ->
-            WorldCard(
-                world = world,
-                onSelected = { onWorldSelected(world.worldId) }
+        if (worlds.isEmpty()) {
+            Text(
+                text = "正在加载世界选项...",
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                textAlign = TextAlign.Center
             )
+        } else {
+            // 为世界卡片添加滚动功能
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                worlds.forEach { world ->
+                    WorldCard(
+                        world = world,
+                        onSelected = { onWorldSelected(world.worldId) },
+                    )
+                }
+            }
         }
     }
+}
+
+@Preview
+@Composable
+fun WorldCardPreview() {
+    WorldCard(
+        NarrativeEngine.WorldOption(
+            worldId = "decaying_throne",
+            name = "开始你的叙事之旅",
+            description = "选择一个世界开始你的冒险。",
+            requiredAttributes = emptyMap()
+        ),
+        {},
+    )
 }
 
 /**
@@ -326,14 +445,16 @@ fun WorldCard(
                     text = world.name,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = Color.White,
+                    textAlign = TextAlign.Center
                 )
 
                 Text(
                     text = world.description,
                     fontSize = 14.sp,
                     color = Color.White.copy(alpha = 0.9f),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 world.requiredAttributes.takeIf { it.isNotEmpty() }?.let { attributes ->

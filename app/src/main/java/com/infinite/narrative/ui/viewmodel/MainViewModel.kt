@@ -38,11 +38,17 @@ class MainViewModel(
             try {
                 // 生成世界选择推荐
                 val worldSelection = narrativeEngine.generateWorldSelection(playerId)
+                println("DEBUG: WorldSelection - recommendation: ${worldSelection.recommendation}")
+                println("DEBUG: WorldSelection - worldOptions size: ${worldSelection.worldOptions.size}")
+                worldSelection.worldOptions.forEach { world ->
+                    println("DEBUG: World - id: ${world.worldId}, name: ${world.name}")
+                }
                 _uiState.value = MainUiState.WorldSelection(
                     recommendation = worldSelection.recommendation,
                     worldOptions = worldSelection.worldOptions
                 )
             } catch (e: Exception) {
+                println("DEBUG: Error loading world selection: ${e.message}")
                 _uiState.value = MainUiState.Error("加载失败: ${e.message}")
             }
         }
@@ -68,12 +74,7 @@ class MainViewModel(
                     storyText = result.storySegment,
                     readProgress = 0f
                 )
-                
-                // 自动继续到选项选择
-                viewModelScope.launch {
-                    delay(3000) // 等待故事阅读
-                    _uiState.value = MainUiState.OptionSelection(result.options)
-                }
+
             } catch (e: Exception) {
                 _uiState.value = MainUiState.Error("故事生成失败: ${e.message}")
             }
@@ -134,16 +135,42 @@ class MainViewModel(
                         readProgress = 0f
                     )
                     
-                    // 自动继续到选项选择
-                    viewModelScope.launch {
-                        delay(3000)
-                        _uiState.value = MainUiState.OptionSelection(result.options)
+                    // 检查是否应该结束故事（比如达到最大轮数或遇到结束标志）
+                    if (shouldEndStory(result)) {
+                        // 故事结束，返回世界选择
+                        viewModelScope.launch {
+                            delay(5000) // 让玩家有时间阅读最后的故事
+                            _uiState.value = MainUiState.WorldSelection(
+                                recommendation = "你完成了${currentWorld}的故事！请选择新的世界继续冒险。",
+                                worldOptions = narrativeEngine.generateWorldSelection(playerId).worldOptions
+                            )
+                        }
+                    } else {
+                        // 继续故事循环
+                        viewModelScope.launch {
+                            delay(3000)
+                            _uiState.value = MainUiState.OptionSelection(result.options)
+                        }
                     }
                 } catch (e: Exception) {
                     _uiState.value = MainUiState.Error("选项处理失败: ${e.message}")
                 }
             }
         }
+    }
+    
+    /**
+     * 检查是否应该结束故事
+     */
+    private fun shouldEndStory(result: NarrativeEngine.StoryGenerationResult): Boolean {
+        // 简单的结束条件：如果选项中包含"结束"、"完结"、"终章"等关键词
+        val endKeywords = listOf("结束", "完结", "终章", "结局", "尾声", "落幕")
+        
+        return result.options.any { option ->
+            endKeywords.any { keyword ->
+                option.text.contains(keyword) || option.description.contains(keyword)
+            }
+        } || result.options.size < 2 // 如果选项少于2个，也可能表示故事接近尾声
     }
     
     /**

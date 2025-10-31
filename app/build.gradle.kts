@@ -95,6 +95,11 @@ dependencies {
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.mockito.core)
     testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.mockito.core)
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 }
