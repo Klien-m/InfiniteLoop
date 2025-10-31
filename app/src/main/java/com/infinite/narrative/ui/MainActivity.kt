@@ -10,13 +10,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -30,11 +27,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.infinite.narrative.MVPApplication
 import com.infinite.narrative.ui.component.LoadingIndicator
 import com.infinite.narrative.ui.component.OptionSelector
+import com.infinite.narrative.ui.component.LinearProgressIndicatorWithText
 import com.infinite.narrative.ui.component.StoryReader
 import com.infinite.narrative.ui.component.WorldSelector
 import com.infinite.narrative.ui.viewmodel.MainUiState
@@ -201,6 +198,8 @@ fun StoryReadingScreen(
     modifier: Modifier = Modifier
 ) {
     val currentProgress = remember { mutableFloatStateOf(0f) }
+    val totalWords = remember { state.storyText.split("\\s+".toRegex()).size }
+    val readWords = remember { mutableStateOf(0) }
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -211,12 +210,15 @@ fun StoryReadingScreen(
             onTextFinished = onContinue,
             onProgressChanged = { progress ->
                 currentProgress.floatValue = progress
+                // 计算已阅读的字数
+                readWords.value = (totalWords * progress).toInt()
             },
             modifier = Modifier.weight(1f)
         )
 
-        LinearProgressIndicator(
-            progress = { currentProgress.floatValue },
+        // 自定义进度条组件
+        LinearProgressIndicatorWithText(
+            progress = currentProgress.floatValue,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
